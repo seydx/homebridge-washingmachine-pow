@@ -37,6 +37,8 @@ class sensor_Accessory {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
   getService() {
+  
+    const self = this;
 
     this.mainService.getCharacteristic(Characteristic.MotionDetected)
       .on('change', this.changeValue.bind(this));
@@ -52,13 +54,37 @@ class sensor_Accessory {
       
     this.mainService.getCharacteristic(Characteristic.Duration)
       .on('get', callback => callback(null, 5))
-      .on('set', (value, callback) => callback());
+      .on('set', (value, callback) => callback())
+      .updateValue(5);
       
     this.mainService.getCharacteristic(Characteristic.Sensitivity)
       .on('get', callback => callback(null, 0))
+      .on('set', (value, callback) => callback())
       .updateValue(0);
       
-    this.historyService = new FakeGatoHistoryService('motion', {displayName: this.accessory.displayName, log: this.log}, {storage:'fs',path:this.HBpath, disableTimer: false, disableRepeatLastData:false});
+    this.historyService = new FakeGatoHistoryService('motion', this.accessory, {storage:'fs',path:this.HBpath, disableTimer: false, disableRepeatLastData:false});
+    this.historyService.log = this.log;
+
+    setTimeout(function(){
+    
+      if(self.historyService.history.length === 1){
+    
+        let state = self.mainService.getCharacteristic(Characteristic.MotionDetected).value;
+    
+        if(state){
+    
+          let lastActivation = moment().unix() - self.historyService.getInitialTime();
+          this.mainService.getCharacteristic(Characteristic.LastActivation)
+            .updateValue(lastActivation);
+    
+        }
+    
+        let status = state ? 1 : 0;
+        self.historyService.addEntry({time: moment().unix(), status: status});
+    
+      }
+    
+    }, 5000);
 
   }
   
@@ -81,8 +107,7 @@ class sensor_Accessory {
 
       } else {
     
-        this.logger.info(this.accessory.displayName + ': No motion!');
-        
+        this.logger.info(this.accessory.displayName + ': No motion!');        
         let message = this.accessory.context.notifier.motionOff;
         
         if(this.accessory.context.notifier.active)
