@@ -18,7 +18,7 @@ This is a dynamic platform plugin for [Homebridge](https://github.com/nfarina/ho
 
 This Plugin creates two Accessories. A Outlet Accessory with FakeGato functionality to check the power etc and a Motion Sensor Accessory, also with FakeGato functionality, which will be triggered when the current power is greater or equal the "pause" value defined in config.json
 
-You can also set up the notifier to get a Telegram notification with customized messages and markdown capability when the current running program finishes!
+You can also set up the notifier to get a Telegram notification with customized messages and markdown capability when the current running program starts and/or finishes!
 
 ## Installation instructions
 
