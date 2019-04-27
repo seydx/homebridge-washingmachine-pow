@@ -34,6 +34,7 @@ function WMPow (log, config, api) {
   this._accessories = new Map();
   
   this.config.devices = this.config.devices||[];
+  this.count = 0;
   
   this.config.notifier = {
     active: this.config.notifier.active||false,
@@ -116,6 +117,8 @@ WMPow.prototype = {
 
     const self = this;
     
+    this.count++;
+    
     if(add){
 
       let name = type === 'Outlet' ? object.name + ' Outlet' : object.name + ' Sensor';
@@ -140,7 +143,7 @@ WMPow.prototype = {
       .setCharacteristic(Characteristic.Identify, accessory.displayName)
       .setCharacteristic(Characteristic.Manufacturer, 'SeydX')
       .setCharacteristic(Characteristic.Model, type)
-      .setCharacteristic(Characteristic.SerialNumber, '1234567890')
+      .setCharacteristic(Characteristic.SerialNumber, 'POW-' + this.count)
       .setCharacteristic(Characteristic.FirmwareRevision, packageFile.version);
     
     await this.refreshContext(accessory, object, type, add);
