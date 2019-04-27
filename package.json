@@ -1,6 +1,6 @@
 {
   "name": "homebridge-washingmachine-pow",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "homebridge-washingmachine-pow",
   "main": "index.js",
   "devDependencies": {},
