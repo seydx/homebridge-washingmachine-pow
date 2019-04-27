@@ -23,6 +23,7 @@ class sensor_Accessory {
     this.api = platform.api;
     this.config = platform.config;
     this.accessories = platform.accessories;
+    this.HBpath = platform.api.user.storagePath()+'/accessories';
     
     this.accessory = accessory;
     this.mainService = this.accessory.getService(Service.MotionSensor, this.accessory.displayName + ' Sensor');
