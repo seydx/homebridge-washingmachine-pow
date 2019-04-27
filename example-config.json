@@ -1,0 +1,48 @@
+{
+ "bridge": {
+   ...
+},
+ "accessories": [
+   ...
+],
+  "platforms": [
+    {
+      "platform": "WMPow",
+      "clearCache": false,
+      "devices":[
+        {
+          "active": true,
+          "name": "Bathroom Washingmachine",
+          "address": "192.168.178.134",
+          "port": 1883,
+          "username": "test",
+          "password": "strong1234",
+          "publishTopic": "cmnd/sonoffpow/TelePeriod",
+          "puplishParam": "15",
+          "subscribeTopics":{
+			"getPower": "stat/sonoffpow/POWER",
+			"getEnergy": "tele/sonoffpow/SENSOR",
+			"getState": "tele/sonoffpow/STATE",
+			"getLink": "tele/sonoffpow/LWT"
+          },
+          "sendTopics": {
+            "setPower": "cmnd/sonoffpow/power"
+          },
+          "parameter":{
+            "off": 0,
+            "standby": 2,
+            "pause": 3,
+            "active": 5
+          }
+        }
+      ],
+      "notifier":{
+        "active": true,
+        "token": "TelegramToken",
+        "chatID": "TelegramChatID",
+        "motionOn": "*Washingmachine:* started!",
+        "motionOff": "*Washingmachine:* finished!"
+      }
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "name": "homebridge-washingmachine-pow",
+  "version": "1.0.0",
+  "description": "homebridge-washingmachine-pow",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SeydX/homebridge-washingmachine-pow.git"
+  },
+  "author": "SeydX (https://github.com/SeydX/homebridge-washingmachine-pow)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SeydX/homebridge-washingmachine-pow/issues"
+  },
+  "homepage": "https://github.com/SeydX/homebridge-washingmachine-pow#readme",
+  "keywords": [
+    "washingmachine",
+    "homebridge-plugin",
+    "mqtt",
+    "sonoff",
+    "pow",
+    "eve",
+    "energy"
+  ],
+  "engines": {
+    "node": "^8.9.1",
+    "homebridge": "^0.4.49"
+  },
+  "dependencies": {
+    "async-mqtt": "^2.2.1",
+    "debug": "^4.1.1",
+    "moment": "^2.24.0",
+    "fakegato-history": "^0.5.3"
+  }
+}
