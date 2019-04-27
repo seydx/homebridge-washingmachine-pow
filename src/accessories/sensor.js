@@ -78,9 +78,7 @@ class sensor_Accessory {
         
         this.mainService.getCharacteristic(Characteristic.LastActivation)
           .updateValue(lastActivation);
-          
-        
-    
+
       } else {
     
         this.logger.info(this.accessory.displayName + ': No motion!');
