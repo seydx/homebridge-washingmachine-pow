@@ -51,9 +51,11 @@ class sensor_Accessory {
       this.mainService.addCharacteristic(Characteristic.Sensitivity);
       
     this.mainService.getCharacteristic(Characteristic.Duration)
+      .on('get', callback => callback(null, 5))
       .on('set', (value, callback) => callback());
       
     this.mainService.getCharacteristic(Characteristic.Sensitivity)
+      .on('get', callback => callback(null, 0))
       .updateValue(0);
       
     this.historyService = new FakeGatoHistoryService('energy', {displayName: this.accessory.displayName, log: this.log}, {storage:'fs',path:this.HBpath, disableTimer: false, disableRepeatLastData:false});
