@@ -51,13 +51,13 @@ class sensor_Accessory {
     
     this.client.on('close', () => {
     
-      self.logger.warn(this.accessory.displayName.split(' Outlet')[0] + ': Disconnected');
+      self.logger.info(this.accessory.displayName.split(' Outlet')[0] + ': Disconnected');
     
     });
     
     this.client.on('Offline', () => {
     
-      self.logger.warn(this.accessory.displayName.split(' Outlet')[0] + ': Offline');
+      self.logger.info(this.accessory.displayName.split(' Outlet')[0] + ': Offline');
     
     });
     
@@ -69,13 +69,13 @@ class sensor_Accessory {
     
     this.client.on('end', () => {
     
-      self.logger.warn(this.accessory.displayName.split(' Outlet')[0] + ': MQTT closed!');
+      self.logger.info(this.accessory.displayName.split(' Outlet')[0] + ': MQTT closed!');
     
     });
     
     process.on('SIGTERM', async () => {
     
-      this.logger.warn(this.accessory.displayName.split(' Outlet')[0] + ': Got SIGTERM. Closing MQTT');
+      this.logger.info(this.accessory.displayName.split(' Outlet')[0] + ': Got SIGTERM. Closing MQTT');
       await this.client.end();
     
     });
@@ -114,6 +114,8 @@ class sensor_Accessory {
   }
 
   getService() {
+  
+    const self = this;
 
     this.mainService.getCharacteristic(Characteristic.On)
       .on('set', this.setState.bind(this));
@@ -136,9 +138,29 @@ class sensor_Accessory {
     if(!this.mainService.testCharacteristic(Characteristic.Amperes))
       this.mainService.addCharacteristic(Characteristic.Amperes);
       
-    this.historyService = new FakeGatoHistoryService('energy', {displayName: this.accessory.displayName, log: this.log}, {storage:'fs',path:this.HBpath, disableTimer: false, disableRepeatLastData:false});
+    if(!this.mainService.testCharacteristic(Characteristic.ResetTotal))
+      this.mainService.addCharacteristic(Characteristic.ResetTotal);
+    
+    this.mainService.getCharacteristic(Characteristic.ResetTotal)
+      .on('set', this.resetPower.bind(this));
       
-    this.handleMessages();
+    this.historyService = new FakeGatoHistoryService('energy', this.accessory, {storage:'fs',path:this.HBpath, disableTimer: false, disableRepeatLastData:false});
+    this.historyService.log = this.log;
+    
+    setTimeout(function(){
+      
+      if(self.historyService.history.length === 1){
+      
+        let state = self.mainService.getCharacteristic(Characteristic.TotalPowerConsumption).value;
+        let status = state ? state : 0;
+      
+        self.historyService.addEntry({time: moment().unix(), power: status});
+      
+      }
+      
+      self.handleMessages();
+      
+    }, 5000);
 
   }
   
@@ -187,6 +209,11 @@ class sensor_Accessory {
           case self.accessory.context.subscribeTopics.getState:
         
             message = JSON.parse(message);
+            
+            state = message.POWER === 'ON' ? true : false;
+            
+            this.mainService.getCharacteristic(Characteristic.On)
+              .updateValue(state);
         
             break;
           
@@ -257,7 +284,7 @@ class sensor_Accessory {
       
         this.logger.info(this.accessory.displayName + ': ' + (state ? 'On' : 'Off'));
 
-        this.client.publish(this.accessory.context.sendTopics.setPower, state ? 'ON' : 'OFF');
+        await this.client.publish(this.accessory.context.sendTopics.setPower, state ? 'ON' : 'OFF');
 
       } else {
       
@@ -268,6 +295,38 @@ class sensor_Accessory {
     } catch(err) {
 
       this.logger.error(this.accessory.displayName + ': An error occured while setting new state!');
+      debug(err);
+
+    } finally {
+
+      callback();
+
+    }
+  
+  }
+  
+  async resetPower(value, callback){
+
+    try {
+      
+      this.logger.info(this.accessory.displayName + ': Resetting Power Consumption!');
+      
+      //EnergyReset1 0 Today
+      //stat/sonoffpow/RESULT = {"EnergyReset":{"Total":0.555,"Yesterday":0.345,"Today":0.000}}
+      
+      //EnergyReset2 0 Yesterday
+      //stat/sonoffpow/RESULT = {"EnergyReset":{"Total":0.333,"Yesterday":0.000,"Today":0.111}}
+      
+      //EnergyReset3 0 Total
+      //stat/sonoffpow/RESULT = {"EnergyReset":{"Total":0.000,"Yesterday":0.111,"Today":0.222}}
+      
+      await this.client.publish('cmnd/sonoffpow/EnergyReset1', 0);
+      await this.client.publish('cmnd/sonoffpow/EnergyReset2', 0);
+      await this.client.publish('cmnd/sonoffpow/EnergyReset3', 0);
+
+    } catch(err) {
+
+      this.logger.error(this.accessory.displayName + ': An error occured while resetting power consumption!');
       debug(err);
 
     } finally {
