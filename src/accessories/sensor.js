@@ -58,7 +58,7 @@ class sensor_Accessory {
       .on('get', callback => callback(null, 0))
       .updateValue(0);
       
-    this.historyService = new FakeGatoHistoryService('energy', {displayName: this.accessory.displayName, log: this.log}, {storage:'fs',path:this.HBpath, disableTimer: false, disableRepeatLastData:false});
+    this.historyService = new FakeGatoHistoryService('motion', {displayName: this.accessory.displayName, log: this.log}, {storage:'fs',path:this.HBpath, disableTimer: false, disableRepeatLastData:false});
 
   }
   
