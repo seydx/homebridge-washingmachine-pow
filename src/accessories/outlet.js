@@ -136,7 +136,7 @@ class sensor_Accessory {
     if(!this.mainService.testCharacteristic(Characteristic.Amperes))
       this.mainService.addCharacteristic(Characteristic.Amperes);
       
-    this.historyService = new FakeGatoHistoryService('energy', this.accessory, {storage:'fs',path:this.HBpath, disableTimer: false, disableRepeatLastData:false});
+    this.historyService = new FakeGatoHistoryService('energy', {displayName: this.accessory.displayName, log: this.log}, {storage:'fs',path:this.HBpath, disableTimer: false, disableRepeatLastData:false});
       
     this.handleMessages();
 
@@ -162,11 +162,11 @@ class sensor_Accessory {
             message = message.toString();
           
             if(message !== 'Online' && !this.warned){
-              this.logger.warn(this.accessory.displayName.split(' Outlet')[0] + ': Link Offline!');
+              debug(this.accessory.displayName.split(' Outlet')[0] + ': Link Offline!');
               this.warned = true;
             } else {
               if(this.warned){
-                this.logger.info(this.accessory.displayName.split(' Outlet')[0] + ': Link established!');
+                debug(this.accessory.displayName.split(' Outlet')[0] + ': Link established!');
                 this.warned = false;
               }
             }
