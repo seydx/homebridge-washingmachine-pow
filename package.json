@@ -1,12 +1,19 @@
 {
   "name": "homebridge-washingmachine-pow",
-  "version": "1.0.4",
+  "version": "2.0.0",
   "description": "homebridge-washingmachine-pow",
   "main": "index.js",
   "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "funding": [
+    {
+      "type": "paypal",
+      "url": "https://paypal.me/seydx"
+    },
+    {
+      "type": "github",
+      "url": "https://github.com/SeydX"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SeydX/homebridge-washingmachine-pow.git"
@@ -27,13 +34,12 @@
     "energy"
   ],
   "engines": {
-    "node": "^8.9.1",
-    "homebridge": "^0.4.49"
+    "node": ">=12.18.3",
+    "homebridge": "^1.2.0"
   },
   "dependencies": {
-    "async-mqtt": "^2.2.1",
-    "debug": "^4.1.1",
-    "moment": "^2.24.0",
-    "fakegato-history": "^0.5.3"
+    "async-mqtt": "^2.6.1",
+    "fakegato-history": "^0.6.0",
+    "telegraf": "^3.38.0"
   }
 }

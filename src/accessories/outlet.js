@@ -1,342 +1,292 @@
 'use strict';
 
-const debug = require('debug')('WMPow');
+const Logger = require('../helper/logger.js');
+
 const MQTT = require('async-mqtt');
-const moment = require('moment');
 
-const EveTypes = require('../types/eve.js');
+class OutletAccessory {
 
-var Service, Characteristic, FakeGatoHistoryService;
-
-class sensor_Accessory {
-  constructor (platform, accessory) {
-
-    Service = platform.api.hap.Service;
-    Characteristic = platform.api.hap.Characteristic;
+  constructor (api, accessory, FakeGatoHistoryService, telegram) {
     
-    EveTypes.registerWith(platform.api.hap);
-    FakeGatoHistoryService = require('fakegato-history')(platform.api);
-
-    this.platform = platform;
-    this.log = platform.log;
-    this.logger = platform.logger;
-    this.api = platform.api;
-    this.config = platform.config;
-    this.accessories = platform.accessories;
-    this.HBpath = platform.api.user.storagePath()+'/accessories';
-    
+    this.api = api;
     this.accessory = accessory;
-    this.mainService = this.accessory.getService(Service.Outlet, this.accessory.displayName + ' Outlet');
-
-    this.handleMQTT();
+    this.FakeGatoHistoryService = FakeGatoHistoryService;
+    this.Telegram = telegram;
+    
+    this.getService();
 
   }
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
   // Services
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-  
-  handleMQTT(){
-  
-    const self = this;
 
-    this.client = MQTT.connect('mqtt://' + this.accessory.context.address + ':' + this.accessory.context.port, this.accessory.context.options);
+  getService () {
     
-    this.client.on('error', err => {
-    
-      self.logger.error(this.accessory.displayName.split(' Outlet')[0] + ': Error event on MQTT');
-      debug(err);
-    
-    });
-    
-    this.client.on('close', () => {
-    
-      self.logger.info(this.accessory.displayName.split(' Outlet')[0] + ': Disconnected');
-    
-    });
-    
-    this.client.on('Offline', () => {
-    
-      self.logger.info(this.accessory.displayName.split(' Outlet')[0] + ': Offline');
-    
-    });
-    
-    this.client.on('reconnect', () => {
-    
-      self.logger.info(this.accessory.displayName.split(' Outlet')[0] + ': Reconnecting...');
-    
-    });
-    
-    this.client.on('end', () => {
-    
-      self.logger.info(this.accessory.displayName.split(' Outlet')[0] + ': MQTT closed!');
-    
-    });
-    
-    process.on('SIGTERM', async () => {
-    
-      this.logger.info(this.accessory.displayName.split(' Outlet')[0] + ': Got SIGTERM. Closing MQTT');
-      await this.client.end();
-    
-    });
-    
-    this.logger.info(this.accessory.displayName.split(' Outlet')[0] + ': Connecting..');
-    this.client.on('connect', this.connectMQTT.bind(this));
-
-  }
-  
-  async connectMQTT(){
-
-    this.logger.info(this.accessory.displayName.split(' Outlet')[0] + ': Connected!');
-
-    try {
-    
-      await this.client.publish(this.accessory.context.publishTopic, this.accessory.context.publishParam);        
+    let service = this.accessory.getService(this.api.hap.Service.Outlet);
         
-      this.logger.info(this.accessory.displayName.split(' Outlet')[0] + ': Subscribing to topics...');
-        
-      await this.client.subscribe(this.accessory.context.subscribeTopics.getPower);
-      await this.client.subscribe(this.accessory.context.subscribeTopics.getEnergy);
-      await this.client.subscribe(this.accessory.context.subscribeTopics.getState);
-      await this.client.subscribe(this.accessory.context.subscribeTopics.getLink);
-        
-      this.logger.info(this.accessory.displayName.split(' Outlet')[0] + ': Subscribed!');
-      
-      this.getService();
-        
-    } catch(err) {
-
-      this.logger.error(this.accessory.displayName.split(' Outlet')[0] + ': An error occured on connecting/subscribing to MQTT!');
-      debug(err);
-
+    if(!service){
+      Logger.info('Adding Outlet service', this.accessory.displayName);
+      service = this.accessory.addService(this.api.hap.Service.Outlet, this.accessory.displayName, this.accessory.context.config.subtype);
     }
+    
+    if(!service.testCharacteristic(this.api.hap.Characteristic.CurrentConsumption))
+      service.addCharacteristic(this.api.hap.Characteristic.CurrentConsumption);
+        
+    if(!service.testCharacteristic(this.api.hap.Characteristic.TotalConsumption))
+      service.addCharacteristic(this.api.hap.Characteristic.TotalConsumption);
+      
+    if(!service.testCharacteristic(this.api.hap.Characteristic.Volts))
+      service.addCharacteristic(this.api.hap.Characteristic.Volts);
+      
+    if(!service.testCharacteristic(this.api.hap.Characteristic.Amperes))
+      service.addCharacteristic(this.api.hap.Characteristic.Amperes);
+      
+    if(!service.testCharacteristic(this.api.hap.Characteristic.ResetTotal))
+      service.addCharacteristic(this.api.hap.Characteristic.ResetTotal);
   
-  }
-
-  getService() {
+    this.historyService = new this.FakeGatoHistoryService('energy', this.accessory, {storage:'fs'}); 
+    
+    service.getCharacteristic(this.api.hap.Characteristic.CurrentConsumption)
+      .on('change', this.changedState.bind(this));
+    
+    service.getCharacteristic(this.api.hap.Characteristic.ResetTotal)
+      .on('set', this.resetEnergy.bind(this));
   
-    const self = this;
-
-    this.mainService.getCharacteristic(Characteristic.On)
+    service.getCharacteristic(this.api.hap.Characteristic.On)
       .on('set', this.setState.bind(this));
       
-    if(!this.mainService.testCharacteristic(Characteristic.PowerConsumption))
-      this.mainService.addCharacteristic(Characteristic.PowerConsumption);
-      
-    if(!this.mainService.testCharacteristic(Characteristic.PowerConsumptionVA))
-      this.mainService.addCharacteristic(Characteristic.PowerConsumptionVA);
-      
-    if(!this.mainService.testCharacteristic(Characteristic.TotalPowerConsumption))
-      this.mainService.addCharacteristic(Characteristic.TotalPowerConsumption);
-      
-    if(!this.mainService.testCharacteristic(Characteristic.TotalPowerConsumptionVA))
-      this.mainService.addCharacteristic(Characteristic.TotalPowerConsumptionVA);
-      
-    if(!this.mainService.testCharacteristic(Characteristic.Volts))
-      this.mainService.addCharacteristic(Characteristic.Volts);
-      
-    if(!this.mainService.testCharacteristic(Characteristic.Amperes))
-      this.mainService.addCharacteristic(Characteristic.Amperes);
-      
-    if(!this.mainService.testCharacteristic(Characteristic.ResetTotal))
-      this.mainService.addCharacteristic(Characteristic.ResetTotal);
+    this.start();
     
-    this.mainService.getCharacteristic(Characteristic.ResetTotal)
-      .on('set', this.resetPower.bind(this));
-      
-    this.historyService = new FakeGatoHistoryService('energy', this.accessory, {storage:'fs',path:this.HBpath, disableTimer: false, disableRepeatLastData:false});
-    this.historyService.log = this.log;
+  }  
+  
+  async start(){
+  
+    try {
     
-    setTimeout(function(){
+      this.client = MQTT.connect('mqtt://' + this.accessory.context.config.ip + ':' + this.accessory.context.config.port, this.accessory.context.config.options);
       
-      if(self.historyService.history.length === 1){
+      this.client.on('error', err => {
+        Logger.error('An error occured with MQTT', this.accessory.displayName);
+        Logger.error(err);
+      });
       
-        let state = self.mainService.getCharacteristic(Characteristic.TotalPowerConsumption).value;
-        let status = state ? state : 0;
+      this.client.on('close', () => {
+        Logger.info('MQTT closed', this.accessory.displayName);
+      });
       
-        self.historyService.addEntry({time: moment().unix(), power: status});
+      this.client.on('Offline', () => {
+        Logger.info('MQTT offline', this.accessory.displayName);
+      });
       
-      }
+      this.client.on('reconnect', () => {
+        Logger.info('MQTT reconnecting...', this.accessory.displayName);
+      });
       
-      self.handleMessages();
+      this.client.on('end', () => {
+        Logger.info('MQTT quitted', this.accessory.displayName);
+      });
       
-    }, 5000);
-
+      Logger.info('Connecting to mqtt broker', this.accessory.displayName);
+      
+      this.client.on('connect', async () => {     
+        
+        Logger.info('Connected. Subscribing to topics...', this.accessory.displayName);
+        
+        try {
+        
+          await this.client.subscribe(this.accessory.context.config.topics.energyGet);
+          await this.client.subscribe(this.accessory.context.config.topics.stateGet);
+          await this.client.subscribe(this.accessory.context.config.topics.statusGet);
+        
+        } catch(err) {
+        
+          Logger.error('An error occured while subscribing to topics', this.accessory.displayName);
+          Logger.error(err);
+        
+        }
+          
+        Logger.info('Subscribed!', this.accessory.displayName);
+        
+        this.getState();
+      
+      });
+    
+    } catch(err) {
+    
+      Logger.error('An error occured while connecting to mqtt broker', this.accessory.displayName);
+      Logger.error(err);
+    
+    }
+  
   }
   
-  async handleMessages(){
+  async getState(){
   
-    const self = this;
-
-    if(this.accessory.context.removed){
+    this.client.on('message', (topic, message, state) => {
     
-      this.logger.warn(this.accessory.displayName.split(' Outlet')[0] + ': Accessory removed! Closing MQTT');
-      await this.client.end();
-
-    } else{
-    
-      this.client.on('message', (topic, message, state) => {
-    
-        switch(topic){
-
-          case self.accessory.context.subscribeTopics.getLink:
+      Logger.debug(message.toString(), this.accessory.displayName);
+  
+      switch(topic){
         
-            message = message.toString();
+        case this.accessory.context.config.topics.statusGet:
+      
+          message = message.toString();
+          state = message === 'ON' ? true : false;
+            
+          this.accessory
+            .getService(this.api.hap.Service.Outlet)
+            .getCharacteristic(this.api.hap.Characteristic.On)
+            .updateValue(state);
+      
+          break;
+        
+        case this.accessory.context.config.topics.stateGet:
+      
+          message = JSON.parse(message);
+          state = message.POWER === 'ON' ? true : false;
           
-            if(message !== 'Online' && !this.warned){
-              debug(this.accessory.displayName.split(' Outlet')[0] + ': Link Offline!');
-              this.warned = true;
-            } else {
-              if(this.warned){
-                debug(this.accessory.displayName.split(' Outlet')[0] + ': Link established!');
-                this.warned = false;
-              }
+          this.accessory
+            .getService(this.api.hap.Service.Outlet)
+            .getCharacteristic(this.api.hap.Characteristic.On)
+            .updateValue(state);
+      
+          break;
+        
+        case this.accessory.context.config.topics.energyGet: 
+      
+          message = JSON.parse(message);
+          state = message.ENERGY.Power ? true : false;
+          
+          this.accessory
+            .getService(this.api.hap.Service.Outlet)
+            .getCharacteristic(this.api.hap.Characteristic.OutletInUse)
+            .updateValue(state);
+          
+          this.accessory
+            .getService(this.api.hap.Service.Outlet)
+            .getCharacteristic(this.api.hap.Characteristic.CurrentConsumption)
+            .updateValue(parseFloat(message.ENERGY.Power));
+            
+          this.accessory
+            .getService(this.api.hap.Service.Outlet)
+            .getCharacteristic(this.api.hap.Characteristic.TotalConsumption)
+            .updateValue(parseFloat(message.ENERGY.Total));
+            
+          this.accessory
+            .getService(this.api.hap.Service.Outlet)
+            .getCharacteristic(this.api.hap.Characteristic.Volts)
+            .updateValue(parseFloat(message.ENERGY.Voltage));
+            
+          this.accessory
+            .getService(this.api.hap.Service.Outlet)
+            .getCharacteristic(this.api.hap.Characteristic.Amperes)
+            .updateValue(parseFloat(message.ENERGY.Current));
+            
+          if(this.Telegram){
+            if(message.ENERGY.Power >= this.accessory.context.config.startValue && !this.started){
+              this.started = true;
+              this.Telegram.send('started', this.accessory.displayName);
+            } else if(message.ENERGY.Power < this.accessory.context.config.startValue && this.started){
+              this.started = false;
+              this.Telegram.send('finished', this.accessory.displayName);
             }
+          }
+      
+          break;
         
-            break;
-          
-          case self.accessory.context.subscribeTopics.getPower:
-        
-            message = message.toString();
-          
-            state = message === 'ON' ? true : false;
-          
-            this.mainService.getCharacteristic(Characteristic.On)
-              .updateValue(state);
-        
-            break;
-          
-          case self.accessory.context.subscribeTopics.getState:
-        
-            message = JSON.parse(message);
-            
-            state = message.POWER === 'ON' ? true : false;
-            
-            this.mainService.getCharacteristic(Characteristic.On)
-              .updateValue(state);
-        
-            break;
-          
-          case self.accessory.context.subscribeTopics.getEnergy:
-        
-            message = JSON.parse(message);
-            
-            this.powerConsumption = parseFloat(message.ENERGY.Power);
-            this.powerFactor = parseFloat(message.ENERGY.Factor);
-            this.powerConsumptionVA = this.powerFactor > 0 ? this.powerConsumption / this.powerFactor : 0;
-            this.totalConsumption = parseFloat(message.ENERGY.Total);
-            this.voltage = parseFloat(message.ENERGY.Voltage);
-            this.ameperes = parseFloat(message.ENERGY.Current);
-            
-            this.mainService.getCharacteristic(Characteristic.PowerConsumption)
-              .updateValue(this.powerConsumption);
-              
-            this.mainService.getCharacteristic(Characteristic.PowerConsumptionVA)
-              .updateValue(this.powerConsumptionVA);
-              
-            this.mainService.getCharacteristic(Characteristic.TotalPowerConsumption)
-              .updateValue(this.totalConsumption);
-              
-            this.mainService.getCharacteristic(Characteristic.Volts)
-              .updateValue(this.voltage);
-              
-            this.mainService.getCharacteristic(Characteristic.Amperes)
-              .updateValue(this.ameperes);
-              
-            this.historyService.addEntry({time: moment().unix(), power: this.totalConsumption});
-          
-            state = message.ENERGY.Power ? true : false;
-            
-            this.mainService.getCharacteristic(Characteristic.OutletInUse)
-              .updateValue(state);
-            
-            this.accessories.map( accessory => {
-              
-              if(accessory.displayName === this.accessory.displayName.split(' Outlet')[0] + ' Sensor'){
-            
-                let motionState = (message.ENERGY.Power >= this.accessory.context.parameter.pause) ? true : false;
-        
-                accessory.getService(Service.MotionSensor).getCharacteristic(Characteristic.MotionDetected)
-                  .updateValue(motionState);
-        
-              }
-              
-            });
-        
-            break;
-          
-          default:
-          //
+        default:
+          //fall throug
+          break;
 
-        }
-        
-      });
-
-    }
-
+      }
+      
+    });
+  
   }
   
   async setState(state, callback){
-
+  
+    let cmd = state
+      ? this.accessory.context.config.onValue
+      : this.accessory.context.config.offValue;
+  
     try {
-
-      if(this.accessory.context.sendTopics.setPower){
+    
+      if(this.client){
       
-        this.logger.info(this.accessory.displayName + ': ' + (state ? 'On' : 'Off'));
-
-        await this.client.publish(this.accessory.context.sendTopics.setPower, state ? 'ON' : 'OFF');
-
+        await this.client.publish(this.accessory.context.config.topics.statusSet, cmd);
+      
       } else {
       
-        this.logger.warn(this.accessory.displayName + ': Ignoring set event. No \'sendTopic (setPower)\' defined!');
+        Logger.warn('Not connected to mqtt broker!', this.accessory.displayName);
+        
+        setTimeout(() => {
+        
+          this.accessory
+            .getService(this.api.hap.Service.Outlet)
+            .getCharacteristic(this.api.hap.Characteristic.On)
+            .updateValue(state ? false : true);
+        
+        }, 1000);
       
       }
-
+    
     } catch(err) {
-
-      this.logger.error(this.accessory.displayName + ': An error occured while setting new state!');
-      debug(err);
-
-    } finally {
-
-      callback();
-
+    
+      Logger.error('An error occured during setting state to ' + cmd, this.accessory.displayName);
+      Logger.error(err);
+    
     }
+    
+    callback(null);
   
   }
   
-  async resetPower(value, callback){
-
+  async resetEnergy(state, callback){
+  
     try {
+    
+      Logger.info('Resetting power meter...', this.accessory.displayName);
       
-      this.logger.info(this.accessory.displayName + ': Resetting Power Consumption!');
+      const now = Math.round(new Date().valueOf() / 1000); 
+      const epoch = Math.round(new Date('2001-01-01T00:00:00Z').valueOf() / 1000);
       
-      //EnergyReset1 0 Today
-      //stat/sonoffpow/RESULT = {"EnergyReset":{"Total":0.555,"Yesterday":0.345,"Today":0.000}}
+      for(const topic of this.accessory.context.config.topics.resetSet){
+        await this.client.publish(topic, '0');
+      }
       
-      //EnergyReset2 0 Yesterday
-      //stat/sonoffpow/RESULT = {"EnergyReset":{"Total":0.333,"Yesterday":0.000,"Today":0.111}}
-      
-      //EnergyReset3 0 Total
-      //stat/sonoffpow/RESULT = {"EnergyReset":{"Total":0.000,"Yesterday":0.111,"Today":0.222}}
-      
-      await this.client.publish('cmnd/sonoffpow/EnergyReset1', 0);
-      await this.client.publish('cmnd/sonoffpow/EnergyReset2', 0);
-      await this.client.publish('cmnd/sonoffpow/EnergyReset3', 0);
-
+      this.accessory
+        .getService(this.api.hap.Service.Outlet)
+        .getCharacteristic(this.api.hap.Characteristic.ResetTotal)
+        .updateValue(now - epoch);
+        
+      this.accessory
+        .getService(this.api.hap.Service.Outlet)
+        .getCharacteristic(this.api.hap.Characteristic.TotalConsumption)
+        .updateValue(0);
+    
     } catch(err) {
-
-      this.logger.error(this.accessory.displayName + ': An error occured while resetting power consumption!');
-      debug(err);
-
-    } finally {
-
-      callback();
-
+    
+      Logger.error('An error occured while resetting power meter', this.accessory.displayName);
+      Logger.error(err);
+    
     }
+    
+    callback(null);
   
   }
+  
+  async changedState(value){
+  
+    if(value.oldValue !== value.newValue){
+    
+      this.historyService.addEntry({time: Math.round(new Date().valueOf() / 1000), power: value.newValue});
+    
+    }
+  
+  }               
 
 }
 
-module.exports = sensor_Accessory;
+module.exports = OutletAccessory;

@@ -1,0 +1,268 @@
+{
+  "pluginAlias": "WMPow",
+  "pluginType": "platform",
+  "singular": true,
+  "customUi": false,
+  "footerDisplay": "For documentation please see [GitHub repository](https://github.com/SeydX/homebridge-washingmachine-pow)",
+  "schema": {
+    "name": {
+      "title": "Name",
+      "type": "string",
+      "default": "WMPow",
+      "description": "Name for the log."
+    },
+    "debug": {
+      "title": "Debug",
+      "type": "boolean",
+      "description": "Enables additional output in the log."
+    },
+    "devices": {
+      "type": "array",
+      "items": {
+        "title": "Devices",
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "required": true,
+            "description": "Set the device name for display in the Home app."
+          },
+          "ip": {
+            "title": "IP Address",
+            "type": "string",
+            "placeholder": "192.168.178.1",
+            "required": true,
+            "description": "MQTT Broker ip address."
+          },
+          "port": {
+            "title": "Port",
+            "type": "integer",
+            "placeholder": 80,
+            "description": "MQTT Broker port."
+          },
+          "username": {
+            "title": "Username",
+            "type": "string",
+            "description": "MQTT Broker username."
+          },
+          "password": {
+            "title": "Username",
+            "type": "string",
+            "description": "MQTT Broker password."
+          },
+          "manufacturer": {
+            "name": "Manufacturer",
+            "type": "string",
+            "placeholder": "Sony",
+            "description": "Set the manufacturer name for display in the Home app."
+          },
+          "model": {
+            "name": "Model",
+            "type": "string",
+            "placeholder": "Television",
+            "description": "Set the model for display in the Home app."
+          },
+          "serialNumber": {
+            "name": "Serial Number",
+            "type": "string",
+            "placeholder": "SerialNumber",
+            "description": "Set the serial number for display in the Home app."
+          },
+          "onValue": {
+            "name": "ON Message",
+            "type": "string",
+            "placeholder": "ON",
+            "description": "Client ON message for switch."
+          },
+          "offValue": {
+            "name": "ON Message",
+            "type": "string",
+            "placeholder": "ON",
+            "description": "Client OFF message for switch."
+          },
+          "startValue": {
+            "title": "Start At",
+            "type": "integer",
+            "placeholder": 3,
+            "description": "Size in Watt for trigger Telegram Start message."
+          },
+          "topics": {
+            "titel": "Topics",
+            "type": "object",
+            "properties": {
+              "stateGet": {
+                "title": "State Get Topic",
+                "description": "Topic for cyclic telemetry information.",
+                "type": "string",
+                "required": true
+              },
+              "statusGet": {
+                "title": "Status Get Topic",
+                "description": "Status of switch.",
+                "type": "string",
+                "required": true
+              },
+              "energyGet": {
+                "title": "Energy Get Topic",
+                "description": "Topic for energy telemetry information.",
+                "type": "string",
+                "required": true
+              },
+              "statusSet": {
+                "title": "Status Set Topic",
+                "description": "Command topic to set switch.",
+                "type": "string",
+                "required": true
+              },
+              "resetSet": {
+                "title": "Reset Set Topic(s)",
+                "type": "array",
+                "items": {
+                  "title": "Name",
+                  "type": "string",
+                  "description": "Command topic(s) to reset energy information."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "telegram": {
+      "titel": "Options",
+      "type": "object",
+      "properties": {
+        "active": {
+          "title": "Active",
+          "description": "Activates Telegram.",
+          "type": "boolean",
+          "required": true,
+          "default": false
+        },
+        "token": {
+          "title": "Token",
+          "type": "string",
+          "description": "Telegram Bot Token.",
+          "condition": {
+            "functionBody": "return model.telegram.active === true;"
+          },
+          "required": true
+        },
+        "chatID": {
+          "title": "Chat ID",
+          "type": "string",
+          "description": "Telegram Chat ID.",
+          "condition": {
+            "functionBody": "return model.telegram.active === true;"
+          },
+          "required": true
+        },
+        "messages": {
+          "title": "Messages",
+          "condition": {
+            "functionBody": "return model.telegram.active === true;"
+          },
+          "type": "object",
+          "properties": {
+            "started": {
+              "title": "Target started",
+              "type": "string",
+              "description": "Message when target power consumption is greater or equal than starValue. (Hint: @ will be replaced with accessory name)"
+            },
+            "finished": {
+              "title": "Target finished",
+              "type": "string",
+              "description": "Message when target power consumption is less than starValue. (Hint: @ will be replaced with accessory name)"
+            }
+          }
+        }
+      }
+    }
+  },
+  "layout": [
+    "name",
+    "debug",
+    {
+      "type": "section",
+      "title": "Devices",
+      "expandable": true,
+      "expanded": true,
+      "orderable": false,
+      "items": [
+        {
+          "key": "devices",
+          "type": "array",
+          "orderable": false,
+          "buttonText": "Add Device",
+          "items": [
+            "devices[].name",
+            "devices[].ip",
+            "devices[].port",
+            "devices[].username",
+            "devices[].password",
+            {
+              "key": "devices[]",
+              "type": "section",
+              "title": "Branding",
+              "expandable": true,
+              "expanded": false,
+              "orderable": false,
+              "items": [
+                "devices[].manufacturer",
+                "devices[].model",
+                "devices[].serialNumber"
+              ]
+            },
+            {
+              "key": "devices[].topics",
+              "type": "section",
+              "title": "Topics",
+              "expandable": true,
+              "expanded": false,
+              "orderable": false,
+              "items": [
+                "devices[].topics.stateGet",
+                "devices[].topics.statusGet",
+                "devices[].topics.energyGet",
+                "devices[].topics.statusSet",
+                {
+                  "key": "devices[].topics.resetSet",
+                  "items": [
+                    "devices[].topics.resetSet[]"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Telegram",
+      "orderable": false,
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        "telegram.active",
+        "telegram.token",
+        "telegram.chatID",
+        {
+          "type": "section",
+          "title": "Messages",
+          "condition": {
+            "functionBody": "return model.telegram.active === true;"
+          },
+          "orderable": false,
+          "expandable": true,
+          "expanded": false,
+          "items": [
+            "telegram.messages.started",
+            "telegram.messages.finished"
+          ]
+        }
+      ]
+    }
+  ]
+}

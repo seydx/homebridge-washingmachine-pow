@@ -1,5 +1,5 @@
 /**
- * v1.0
+ * v2.0
  *
  * @url https://github.com/SeydX/homebridge-washmachine-pow
  * @author SeydX <seyd55@outlook.de>

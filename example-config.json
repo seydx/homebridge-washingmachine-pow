@@ -8,40 +8,41 @@
   "platforms": [
     {
       "platform": "WMPow",
-      "clearCache": false,
+      "debug": true,
       "devices":[
         {
-          "active": true,
-          "name": "Bathroom Washingmachine",
-          "address": "192.168.178.134",
+          "name": "Washingmachine",
+          "ip": "192.168.178.134",
           "port": 1883,
           "username": "test",
-          "password": "strong1234",
-          "publishTopic": "cmnd/sonoffpow/TelePeriod",
-          "puplishParam": "15",
-          "subscribeTopics":{
-			"getPower": "stat/sonoffpow/POWER",
-			"getEnergy": "tele/sonoffpow/SENSOR",
-			"getState": "tele/sonoffpow/STATE",
-			"getLink": "tele/sonoffpow/LWT"
+          "password": "test",
+          "manufacturer": "ITEAD",
+          "model": "Sonoff Pow",
+          "serialNumber": "12345",
+          "topics": {
+            "energyGet": "tele/sonoffpow/SENSOR",
+            "stateGet": "tele/sonoffpow/STATE",
+            "statusGet": "stat/sonoffpow/POWER",
+            "statusSet": "cmnd/sonoffpow/power",
+            "resetSet": [
+              "cmnd/sonoffpow/EnergyReset1",
+              "cmnd/sonoffpow/EnergyReset2",
+              "cmnd/sonoffpow/EnergyReset3"
+            ]
           },
-          "sendTopics": {
-            "setPower": "cmnd/sonoffpow/power"
-          },
-          "parameter":{
-            "off": 0,
-            "standby": 2,
-            "pause": 3,
-            "active": 5
-          }
+          "onValue": "ON",
+          "offValue": "OFF",
+          "startValue": 3
         }
       ],
-      "notifier":{
+      "telegram":{
         "active": true,
         "token": "TelegramToken",
         "chatID": "TelegramChatID",
-        "motionOn": "*Washingmachine:* started!",
-        "motionOff": "*Washingmachine:* finished!"
+        "messages": {
+          "started": "*Washingmachine:* started!",
+          "finished": "*Washingmachine:* finished!"
+        }
       }
     }
   ]
