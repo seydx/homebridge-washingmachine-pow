@@ -3,7 +3,7 @@
 </p>
 
 
-# Washingmachine!Pow v1
+# Washingmachine!Pow v2
 
 [![npm](https://img.shields.io/npm/v/homebridge-washingmachine-pow.svg?style=flat-square)](https://www.npmjs.com/package/homebridge-washingmachine-pow)
 [![npm](https://img.shields.io/npm/dt/homebridge-washingmachine-pow.svg?style=flat-square)](https://www.npmjs.com/package/homebridge-washingmachine-pow)
@@ -16,7 +16,7 @@
 
 This is a dynamic platform plugin for [Homebridge](https://github.com/nfarina/homebridge) to control the state of your **washingmachine(s)** used with Sonoff POW (R2) with Telegram notification Support
 
-This Plugin creates two Accessories. A Outlet Accessory with FakeGato functionality to check the power etc and a Motion Sensor Accessory, also with FakeGato functionality, which will be triggered when the current power is greater or equal the "pause" value defined in config.json
+This Plugin creates a Outlet Accessory with FakeGato functionality to check the power, which will be triggered when the current power is greater or equal than "startValue" defined in config.json
 
 You can also set up the notifier to get a Telegram notification with customized messages and markdown capability when the current running program starts and/or finishes!
 
@@ -40,40 +40,41 @@ After [Homebridge](https://github.com/nfarina/homebridge) has been installed:
   "platforms": [
     {
       "platform": "WMPow",
-      "clearCache": false,
-      "devices": [
+      "debug": true,
+      "devices":[
         {
-          "active": true,
-          "name": "Bathroom Washingmachine",
-          "address": "192.168.178.134",
+          "name": "Washingmachine",
+          "ip": "192.168.178.134",
           "port": 1883,
           "username": "test",
-          "password": "strong1234",
-          "publishTopic": "cmnd/sonoffpow/TelePeriod",
-          "puplishParam": "15",
-          "subscribeTopics": {
-            "getPower": "stat/sonoffpow/POWER",
-            "getEnergy": "tele/sonoffpow/SENSOR",
-            "getState": "tele/sonoffpow/STATE",
-            "getLink": "tele/sonoffpow/LWT"
+          "password": "test",
+          "manufacturer": "ITEAD",
+          "model": "Sonoff Pow",
+          "serialNumber": "12345",
+          "topics": {
+            "energyGet": "tele/sonoffpow/SENSOR",
+            "stateGet": "tele/sonoffpow/STATE",
+            "statusGet": "stat/sonoffpow/POWER",
+            "statusSet": "cmnd/sonoffpow/power",
+            "resetSet": [
+              "cmnd/sonoffpow/EnergyReset1",
+              "cmnd/sonoffpow/EnergyReset2",
+              "cmnd/sonoffpow/EnergyReset3"
+            ]
           },
-          "sendTopics": {
-            "setPower": "cmnd/sonoffpow/power"
-          },
-          "parameter": {
-            "off": 0,
-            "standby": 2,
-            "pause": 3,
-            "active": 5
-          }
+          "onValue": "ON",
+          "offValue": "OFF",
+          "startValue": 3
         }
       ],
-      "notifier": {
+      "telegram":{
         "active": true,
         "token": "TelegramToken",
         "chatID": "TelegramChatID",
-        "motionOn": "*Washingmachine:* started!",
-        "motionOff": "*Washingmachine:* finished!"
+        "messages": {
+          "started": "*Washingmachine:* started!",
+          "finished": "*Washingmachine:* finished!"
+        }
       }
     }
   ]
@@ -87,33 +88,38 @@ After [Homebridge](https://github.com/nfarina/homebridge) has been installed:
 | **Attributes** | **Required** | **Usage** |
 |------------|----------|-------|
 | platform | **Yes** | Must be **WMPow** |
-| platform.devices | **No** | An array of devices _(Default: [])_ |
-| platform.devices.active | **No** | Activate/Deactivate the accessory |
-| platform.devices.name | **Yes** | Name of the device/accessory (Must be unique!) |
-| platform.devices.address | **Yes** | Address of your MQTT Service |
-| platform.devices.port | **No** | Port of your MQTT Service _(Default: 1883)_ |
-| platform.devices.username | **No** | Username for the MQTT Service (If no username setted up, just leave blank) |
-| platform.devices.password | **No** | Password for the MQTT Service (If no password setted up, just leave blank) |
-| platform.devices.parameter | **Yes** | Parameter for triggering the motion sensor |
-| platform.devices.parameter.off | **Yes** | Current Power Consumption when  device is off |
-| platform.devices.parameter.standby | **Yes** | Current Power Consumption when  device is in standby mode |
-| platform.devices.parameter.pause | **Yes** | Current Power Consumption when  device is paused |
-| platform.devices.parameter.active | **Yes** | Current Power Consumption when  device is active |
-| notifier.active | **No** | Activate/Deactivate notifier _(Default: false)_ |
-| notifier.token | **No** | Telegram Bot Token |
-| notifier.chatID | **No** | Telegram Chat ID |
-| notifier.motionOn | **No** | Own message when motion sensor triggers on (if you dont want to get this notification, just remove from config) |
-| notifier.motionOff | **No** | Own message when motion sensor triggers off (if you dont want to get this notification, just remove from config) |
+| debug | **No** | 	Enables additional output in the log. |
+| devices.name | **Yes** | Name of the device/accessory (Must be unique!) |
+| devices.ip | **Yes** | Address of your MQTT broker |
+| devices.port | **No** | Port of your MQTT Service _(Default: 1883)_ |
+| devices.username | **No** | Username for the MQTT Service (If no username setted up, just leave blank) |
+| devices.password | **No** | Password for the MQTT Service (If no password setted up, just leave blank) |
+| devices.manufacturer | **No** | Manufacturer name for display in the Home app. |
+| devices.model | **No** | Model name for display in the Home app. |
+| devices.serialNumber | **No** | Serialnumber for display in the Home app. |
+| topics.energyGet | **Yes** | Topic for energy telemetry information. |
+| topics.stateGet | **Yes** | Topic for cyclic telemetry information. |
+| topics.statusGet | **Yes** | Status of switch. |
+| topics.statusSet | **Yes** | Command topic to set switch. |
+| topics.resetSet | **Yes** | Command topic(s) to reset energy information. |
+| devices.onValue | **No** | Client ON message for switch. |
+| devices.offValue | **No** | Client OFF message for switch. |
+| devices.startValue | **No** | Current Power Consumption when  device is active |
+| telegram.active | **No** | Activate/Deactivate notifier _(Default: false)_ |
+| telegram.token | **No** | Telegram Bot Token |
+| telegram.chatID | **No** | Telegram Chat ID |
+| telegram.messages.started | **No** | Own message when motion sensor triggers on (if you dont want to get this notification, just remove from config) |
+| telegram.messages.finished | **No** | Own message when motion sensor triggers off (if you dont want to get this notification, just remove from config) |
 
 
 ## Supported clients
 
 This plugin has been verified to work with the following apps on iOS 12.2 and iOS 12.3 Beta:
 
-* iOS 12.2 / iOS 12.3 Beta
+* iOS 14+
 * Apple Home
-* All 3rd party apps like Elgato Eve etc. _(recommended)_
-* Homebridge v0.4.49
+* All 3rd party apps like Elgato Eve etc.
+* Homebridge v1.0.0+
 
 
 ## Contributing
@@ -130,6 +136,4 @@ Pull requests are accepted.
 
 ## Troubleshooting
 
-If you have any issues with the plugin then you can run homebridge in debug mode, which will provide some additional information. This might be useful for debugging issues.
-
-***HomeBridge with debug mode:*** ```DEBUG=WMPow``` and/or ```homebridge -D ```
+If you have any issues with the plugin then you can run this plugin in debug mode, which will provide some additional information. This might be useful for debugging issues. Just enable ``debug`` in your config and restart homebridge.
