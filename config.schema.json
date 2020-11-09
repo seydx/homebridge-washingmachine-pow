@@ -87,6 +87,11 @@
             "placeholder": 3,
             "description": "Size in Watt for trigger Telegram Start message."
           },
+          "motionSensor": {
+            "title": "Motion Sensor",
+            "type": "boolean",
+            "description": "If enabled, a motion sensor will be exposed to HomeKit which triggers if current consumption is greater/less than startValue."
+          },
           "topics": {
             "titel": "Topics",
             "type": "object",
@@ -201,6 +206,7 @@
             "devices[].port",
             "devices[].username",
             "devices[].password",
+            "devices[].motionSensor",
             {
               "key": "devices[]",
               "type": "section",

@@ -6,10 +6,11 @@ const MQTT = require('async-mqtt');
 
 class OutletAccessory {
 
-  constructor (api, accessory, FakeGatoHistoryService, telegram) {
+  constructor (api, accessory, accessories, FakeGatoHistoryService, telegram) {
     
     this.api = api;
     this.accessory = accessory;
+    this.accessories = accessories;
     this.FakeGatoHistoryService = FakeGatoHistoryService;
     this.Telegram = telegram;
     
@@ -27,7 +28,7 @@ class OutletAccessory {
         
     if(!service){
       Logger.info('Adding Outlet service', this.accessory.displayName);
-      service = this.accessory.addService(this.api.hap.Service.Outlet, this.accessory.displayName, this.accessory.context.config.subtype);
+      service = this.accessory.addService(this.api.hap.Service.Outlet, this.accessory.displayName, this.accessory.context.config.type);
     }
     
     if(!service.testCharacteristic(this.api.hap.Characteristic.CurrentConsumption))
@@ -190,12 +191,41 @@ class OutletAccessory {
             .updateValue(parseFloat(message.ENERGY.Current));
             
           if(this.Telegram){
+      
             if(message.ENERGY.Power >= this.accessory.context.config.startValue && !this.started){
+          
               this.started = true;
+              
               this.Telegram.send('started', this.accessory.displayName);
+              
+              const motionAccessory = this.accessories.find(accessory => accessory.displayName === this.accessory.displayName + ' Motion');
+              
+              if(motionAccessory) {
+              
+                motionAccessory
+                  .getService(this.api.hap.Service.MotionSensor)
+                  .getCharacteristic(this.api.hap.Characteristic.MotionDetected)
+                  .updateValue(1);
+              
+              }
+              
             } else if(message.ENERGY.Power < this.accessory.context.config.startValue && this.started){
+          
               this.started = false;
+              
               this.Telegram.send('finished', this.accessory.displayName);
+              
+              const motionAccessory = this.accessories.find(accessory => accessory.displayName === this.accessory.displayName + ' Motion');
+              
+              if(motionAccessory) {
+              
+                motionAccessory
+                  .getService(this.api.hap.Service.MotionSensor)
+                  .getCharacteristic(this.api.hap.Characteristic.MotionDetected)
+                  .updateValue(0);
+              
+              }
+          
             }
           }
       
@@ -214,8 +244,8 @@ class OutletAccessory {
   async setState(state, callback){
   
     let cmd = state
-      ? this.accessory.context.config.onValue
-      : this.accessory.context.config.offValue;
+      ? 'on'
+      : 'off';
   
     try {
     

@@ -32,7 +32,8 @@
           },
           "onValue": "ON",
           "offValue": "OFF",
-          "startValue": 3
+          "startValue": 3,
+          "motionSensor": true
         }
       ],
       "telegram":{

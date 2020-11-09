@@ -7,6 +7,7 @@ const Telegram = require('./helper/telegram');
 
 //Accessories
 const OutletAccessory = require('./accessories/outlet.js');
+const MotionAccessory = require('./accessories/motion.js');
 
 //Custom Types
 const EveTypes = require('./types/eve_types.js');
@@ -49,6 +50,7 @@ function WMPow (log, config, api) {
     
       let error = false;
       
+      device.type = 'outlet';
       device.port = device.port || 1883;
       device.topics = device.topics || {};
       device.parameter = device.parameter || {};
@@ -93,6 +95,19 @@ function WMPow (log, config, api) {
           Logger.warn('Multiple devices are configured with this name. Duplicate device will be skipped.', device.name);
      
         } else {
+          
+          if(device.motionSensor){
+          
+            let motionSensor = {
+              name: device.name + ' Motion',
+              type: 'motion'
+            };
+            
+            const uuidMotion = UUIDGen.generate(motionSensor.name);
+            
+            this.devices.set(uuidMotion, motionSensor);
+          
+          }
           
           this.devices.set(uuid, device);
           
@@ -182,7 +197,7 @@ WMPow.prototype = {
     const AccessoryInformation = accessory.getService(this.api.hap.Service.AccessoryInformation);
     
     const manufacturer = device.manufacturer && device.manufacturer !== '' ? device.manufacturer : 'Homebridge';
-    const model = device.model && device.model !== '' ? device.model : 'Outlet';
+    const model = device.model && device.model !== '' ? device.model : device.type;
     const serialNumber = device.serialNumber && device.serialNumber !== '' ? device.serialNumber : accessory.displayName;
     
     if (AccessoryInformation) {
@@ -194,7 +209,11 @@ WMPow.prototype = {
     
     accessory.context.config = device;
     
-    new OutletAccessory(this.api, accessory, FakeGatoHistoryService, this.Telegram);
+    if(device.type === 'motion'){
+      new MotionAccessory(this.api, accessory, FakeGatoHistoryService);
+    } else if(device.type === 'outlet'){
+      new OutletAccessory(this.api, accessory, this.accessories, FakeGatoHistoryService, this.Telegram);
+    }
 
   },
 

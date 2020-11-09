@@ -79,6 +79,21 @@ module.exports = {
     Characteristic.SetTime.UUID = 'E863F121-079E-48FF-8F27-9C2605A29F52';
     
     /// /////////////////////////////////////////////////////////////////////////
+    // LastActivation
+    /// ///////////////////////////////////////////////////////////////////////// 
+    Characteristic.LastActivation = function() {
+      Characteristic.call(this, 'Last Activation', 'E863F11A-079E-48FF-8F27-9C2605A29F52');
+      this.setProps({
+        format: Characteristic.Formats.UINT32,
+        unit: Characteristic.Units.SECONDS,
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
+      });
+      this.value = this.getDefaultValue();
+    };
+    inherits(Characteristic.LastActivation, Characteristic);
+    Characteristic.LastActivation.UUID = 'E863F11A-079E-48FF-8F27-9C2605A29F52';
+    
+    /// /////////////////////////////////////////////////////////////////////////
     // CurrentConsumption
     /// ///////////////////////////////////////////////////////////////////////// 
     Characteristic.CurrentConsumption = function() {
