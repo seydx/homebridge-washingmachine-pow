@@ -1,6 +1,9 @@
 # Changelog
 
 
+## v2.0.2 - 2020-11-09
+- Fixed outlet state
+
 ## v2.0.1 - 2020-11-09
 - Fixed mqtt login
 
