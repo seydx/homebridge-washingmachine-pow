@@ -132,7 +132,9 @@ class OutletAccessory {
         case this.accessory.context.config.topics.statusGet:
       
           message = message.toString();
-          state = message === 'ON' ? true : false;
+          state = message === this.accessory.context.config.onValue 
+            ? true 
+            : false;
             
           this.accessory
             .getService(this.api.hap.Service.Outlet)
@@ -144,7 +146,9 @@ class OutletAccessory {
         case this.accessory.context.config.topics.stateGet:
       
           message = JSON.parse(message);
-          state = message.POWER === 'ON' ? true : false;
+          state = message.POWER === this.accessory.context.config.onValue 
+            ? true 
+            : false;
           
           this.accessory
             .getService(this.api.hap.Service.Outlet)
@@ -156,7 +160,9 @@ class OutletAccessory {
         case this.accessory.context.config.topics.energyGet: 
       
           message = JSON.parse(message);
-          state = message.ENERGY.Power ? true : false;
+          state = message.ENERGY.Power 
+            ? true 
+            : false;
           
           this.accessory
             .getService(this.api.hap.Service.Outlet)
