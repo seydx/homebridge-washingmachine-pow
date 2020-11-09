@@ -1,17 +1,27 @@
 # Changelog
 
 
-## 1.0.3 - 2019-04-27
+## v2.0.0 - 2020-11-09
+- Refactored code
+- Added config-ui-x support
+- Removed motion sensor
+- Fixed FakeGao
+
+**BREAKING CHANGES**
+
+If you use v1 of this plugin, please remove the added device from Homekit/Homebridge before updating!
+
+## v1.0.3 - 2019-04-27
 - Bugfix
 
 
-## 1.0.2 - 2019-04-27
+## v1.0.2 - 2019-04-27
 - Bugfix
 
 
-## 1.0.1 - 2019-04-27
+## v1.0.1 - 2019-04-27
 - Bugfix
 
 
-## 1.0 - 2019-04-27
+## v1.0 - 2019-04-27
 - Init release
