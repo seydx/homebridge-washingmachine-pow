@@ -57,20 +57,8 @@ function WMPow (log, config, api) {
       device.startValue = device.startValue || 3;
       
       device.options = {
-        keepalive: 10,
-        clientId: device.name || 'HomebridgeWMPow',
-        protocolId: 'MQTT',
-        protocolVersion: 4,
-        clean: true,
-        reconnectPeriod: 1000,
-        connectTimeout: 30 * 1000,
-        will: {
-          topic: 'WillMsg',
-          payload: 'Connection Closed abnormally..!',
-          qos: 0,
-          retain: false
-        },
-        rejectUnauthorized: false
+        username: device.username || '',
+        password: device.password || ''
       };
 
       if (!device.name) {
