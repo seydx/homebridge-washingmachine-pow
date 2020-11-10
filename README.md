@@ -120,7 +120,7 @@ This plugin has been verified to work with the following apps on iOS 12.2 and iO
 * iOS 14+
 * Apple Home
 * All 3rd party apps like Elgato Eve etc.
-* Homebridge v1.0.0+
+* Homebridge v1.1.6+
 
 
 ## Contributing
