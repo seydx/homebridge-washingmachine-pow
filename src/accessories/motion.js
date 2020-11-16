@@ -41,6 +41,8 @@ class MotionAccessory {
   
     if(value.oldValue !== value.newValue){
     
+      Logger.info(value.newValue ? 'Started' : 'Finished', this.accessory.displayName);
+    
       let lastActivation = Math.round(new Date().valueOf() / 1000) - this.historyService.getInitialTime();
       
       this.accessory

@@ -158,7 +158,7 @@ class OutletAccessory {
       
           break;
         
-        case this.accessory.context.config.topics.energyGet: 
+        case this.accessory.context.config.topics.energyGet:
       
           message = JSON.parse(message);
           state = message.ENERGY.Power 
@@ -173,22 +173,22 @@ class OutletAccessory {
           this.accessory
             .getService(this.api.hap.Service.Outlet)
             .getCharacteristic(this.api.hap.Characteristic.CurrentConsumption)
-            .updateValue(parseFloat(message.ENERGY.Power));
+            .updateValue(message.ENERGY.Power);
             
           this.accessory
             .getService(this.api.hap.Service.Outlet)
             .getCharacteristic(this.api.hap.Characteristic.TotalConsumption)
-            .updateValue(parseFloat(message.ENERGY.Total));
+            .updateValue(message.ENERGY.Total);
             
           this.accessory
             .getService(this.api.hap.Service.Outlet)
             .getCharacteristic(this.api.hap.Characteristic.Volts)
-            .updateValue(parseFloat(message.ENERGY.Voltage));
+            .updateValue(message.ENERGY.Voltage);
             
           this.accessory
             .getService(this.api.hap.Service.Outlet)
             .getCharacteristic(this.api.hap.Characteristic.Amperes)
-            .updateValue(parseFloat(message.ENERGY.Current));
+            .updateValue(message.ENERGY.Current);
             
           if(this.Telegram){
       
@@ -207,6 +207,10 @@ class OutletAccessory {
                   .getCharacteristic(this.api.hap.Characteristic.MotionDetected)
                   .updateValue(1);
               
+              } else {
+              
+                Logger.info('Started', this.accessory.displayName);
+                
               }
               
             } else if(message.ENERGY.Power < this.accessory.context.config.startValue && this.started){
@@ -223,6 +227,10 @@ class OutletAccessory {
                   .getService(this.api.hap.Service.MotionSensor)
                   .getCharacteristic(this.api.hap.Characteristic.MotionDetected)
                   .updateValue(0);
+              
+              } else {
+              
+                Logger.info('Finished', this.accessory.displayName);
               
               }
           

@@ -1,6 +1,6 @@
 {
   "name": "homebridge-washingmachine-pow",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "Dynamic Homebridge Platform plugin for Sonoff POW, customized for washingmachines",
   "main": "index.js",
   "devDependencies": {},
@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "async-mqtt": "^2.6.1",
-    "fakegato-history": "^0.6.0",
-    "telegraf": "^3.38.0"
+    "fakegato-history": "^0.6.1",
+    "form-data": "^3.0.0"
   }
 }

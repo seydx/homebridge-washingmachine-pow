@@ -15,13 +15,11 @@ const EveTypes = require('./types/eve_types.js');
 const PLUGIN_NAME = 'homebridge-washmachine-pow';
 const PLATFORM_NAME = 'WMPow';
 
-var Accessory, Service, Characteristic, UUIDGen, FakeGatoHistoryService;
+var Accessory, UUIDGen, FakeGatoHistoryService;
 
 module.exports = function (homebridge) {
 
   Accessory = homebridge.platformAccessory;
-  Service = homebridge.hap.Service;
-  Characteristic = homebridge.hap.Characteristic;
   UUIDGen = homebridge.hap.uuid;
   
   return WMPow;
@@ -130,7 +128,6 @@ function WMPow (log, config, api) {
     };
       
     this.Telegram = new Telegram(this.config.telegram, this.messages);  
-    this.Telegram.start();
     
   } else {
  

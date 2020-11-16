@@ -2,7 +2,7 @@
 
 const Logger = require('./logger.js');
 
-const { Telegraf } = require('telegraf');
+const FormData = require('form-data');
 
 class Telegram {
 
@@ -12,78 +12,52 @@ class Telegram {
     this.chatID = options.chatID;
     this.messages = messages;
     
-    this.bot = false;
+    this.request = {
+      protocol: 'https:', 
+      host:'api.telegram.org',
+      port: 443,
+      method:'POST',
+      path: '/bot' + this.token + '/sendMessage' 
+    };
 
   }
   
-  async start(){
-  
-    Logger.debug('Connecting to Telegram...');
-
-    const bot = new Telegraf(this.token);
+  send(target, dest, replacer){
     
-    bot.catch((err, ctx) => {
-      Logger.error('Telegram: ' + ctx.updateType + ' Error: ' + err.message);
-    });
+    if(this.messages[dest]){
     
-    bot.start((ctx) => {
-      if (ctx.message) {
-        const from = ctx.message.chat.title || ctx.message.chat.username || 'unknown';
-        const message = 'Chat ID for ' + from + ': ' + ctx.message.chat.id;
-        ctx.reply(message);
-        Logger.debug('Telegram: ' + message);
-      }
-    });
+      let message = this.messages[dest].includes('@') && replacer ? this.messages[dest].replace('@', replacer) : this.messages[dest];
+      
+      const form = new FormData();
+      
+      form.append('chat_id', this.chatID);
+      form.append('parse_mode', 'Markdown');
+      form.append('text', message);
+      
+      Logger.debug('Telegram: Sending Message: ' + message);
+      
+      form.submit(this.request, (err, res) => {
+      
+        if(err){
+          Logger.error('An error occured during sending telegram message!');
+          Logger.error(err);
+        }
+      
+        if(res.statusCode < 200 || res.statusCode > 200){
+          Logger.error('A response error occured during sending telegram message!');
+          Logger.error({
+            code: res.statusCode,
+            message: res.statusMessage 
+          });
+        }
+      
+      });
     
-    await bot.launch();
+    } else {
     
-    this.bot = bot.telegram;
+      Logger.debug('Telegram: Skip sending, no message defined for ' + target);
     
-    return;
-  
-  }
-  
-  async stop(){
-  
-    Logger.debug('Stopping Telegram...');
-    
-    if(this.bot){
-      await this.bot.stop();
-      this.bot = false;
     }
-    
-    return;
-  
-  }
-  
-  async send(dest, replacer){
-  
-    if(!this.bot)
-      return;
-  
-    try {
-      
-      if(this.messages[dest]){
-      
-        let message = this.messages[dest].includes('@') && replacer ? this.messages[dest].replace('@', replacer) : this.messages[dest];
-      
-        Logger.debug('Telegram: Sending Message: ' + message);
-        await this.bot.sendMessage(this.chatID, message);
-      
-      } else {
-      
-        Logger.debug('Telegram: Skip sending, no message defined for ' + dest);
-      
-      }
-    
-    } catch(err) {
-      
-      Logger.error('An error occured during sending telegram message!');
-      Logger.error(err);
-      
-    }
-    
-    return;
     
   }
 
