@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v2.0.4 - 2020-11-09
+- Bugfixes
+- Changed telegrad to form-data
+- Bump dependencies
+
 ## v2.0.2 - 2020-11-09
 - Fixed outlet state
 
