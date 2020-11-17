@@ -125,12 +125,12 @@ class OutletAccessory {
   async getState(){
   
     this.client.on('message', (topic, message, state) => {
-    
-      Logger.debug(message.toString(), this.accessory.displayName);
   
       switch(topic){
         
         case this.accessory.context.config.topics.statusGet:
+        
+          Logger.debug(message.toString() + ' (statusGet)', this.accessory.displayName);
       
           message = message.toString();
           state = message === this.accessory.context.config.onValue 
@@ -145,6 +145,8 @@ class OutletAccessory {
           break;
         
         case this.accessory.context.config.topics.stateGet:
+        
+          Logger.debug(message.toString() + ' (stateGet)', this.accessory.displayName);
       
           message = JSON.parse(message);
           state = message.POWER === this.accessory.context.config.onValue 
@@ -160,6 +162,8 @@ class OutletAccessory {
         
         case this.accessory.context.config.topics.energyGet:
       
+          Logger.debug(message.toString() + ' (energyGet)', this.accessory.displayName);
+        
           message = JSON.parse(message);
           state = message.ENERGY.Power 
             ? true 
@@ -192,9 +196,9 @@ class OutletAccessory {
             
           if(this.Telegram){
       
-            if(message.ENERGY.Power >= this.accessory.context.config.startValue && !this.started){
+            if(message.ENERGY.Power >= this.accessory.context.config.startValue && !this.accessory.context.started){
           
-              this.started = true;
+              this.accessory.context.started = true;
               
               this.Telegram.send('started', this.accessory.displayName);
               
@@ -213,9 +217,9 @@ class OutletAccessory {
                 
               }
               
-            } else if(message.ENERGY.Power < this.accessory.context.config.startValue && this.started){
+            } else if(message.ENERGY.Power < this.accessory.context.config.startValue && this.accessory.context.started){
           
-              this.started = false;
+              this.accessory.context.started = false;
               
               this.Telegram.send('finished', this.accessory.displayName);
               
@@ -258,6 +262,8 @@ class OutletAccessory {
     try {
     
       if(this.client){
+        
+        Logger.debug('Send cmd (' + this.accessory.context.config.topics.statusSet + ') => ' + cmd, this.accessory.displayName);
       
         await this.client.publish(this.accessory.context.config.topics.statusSet, cmd);
       
@@ -297,6 +303,7 @@ class OutletAccessory {
       const epoch = Math.round(new Date('2001-01-01T00:00:00Z').valueOf() / 1000);
       
       for(const topic of this.accessory.context.config.topics.resetSet){
+        Logger.debug('Send cmd (' + topic + ') => 0', this.accessory.displayName);
         await this.client.publish(topic, '0');
       }
       
@@ -324,6 +331,8 @@ class OutletAccessory {
   async changedState(value){
   
     if(value.oldValue !== value.newValue){
+      
+      Logger.debug('Current consumption changed from ' + value.oldValue + 'W to ' + value.newValue + 'W', this.accessory.displayName);
     
       this.historyService.addEntry({time: Math.round(new Date().valueOf() / 1000), power: value.newValue});
     
