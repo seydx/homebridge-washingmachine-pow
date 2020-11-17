@@ -207,6 +207,9 @@
             "devices[].username",
             "devices[].password",
             "devices[].motionSensor",
+            "devices[].onValue",
+            "devices[].offValue",
+            "devices[].startValue",
             {
               "key": "devices[]",
               "type": "section",
