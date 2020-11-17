@@ -1,9 +1,14 @@
 # Changelog
 
 
-## v2.0.4 - 2020-11-09
+## v2.0.5 - 2020-11-17
 - Bugfixes
-- Changed telegrad to form-data
+- Additional debug
+- Added onValue, offValue, startValue to config.schema.json
+
+## v2.0.4 - 2020-11-16
+- Bugfixes
+- Changed telegraf to form-data
 - Bump dependencies
 
 ## v2.0.2 - 2020-11-09
