@@ -76,7 +76,7 @@ function WMPow (log, config, api) {
       } else if(!device.topics.statusGet){
         Logger.warn('There is no topic for device state ("statusGet") configured for this device. This device will be skipped.', device.name);
         error = true;
-      } else if(device.topics.stateSet){
+      } else if(!device.topics.statusSet){
         Logger.warn('There is no topic for switching device state ("stateSet") configured for this device. This device will be skipped.', device.name);
         error = true;
       } else if(!device.topics.resetSet || (device.topics.resetSet && !device.topics.resetSet.length)){
