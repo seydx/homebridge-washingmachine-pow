@@ -22,7 +22,7 @@ class Telegram {
 
   }
   
-  send(target, dest, replacer){
+  send(dest, replacer){
     
     if(this.messages[dest]){
     
