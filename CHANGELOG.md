@@ -1,6 +1,9 @@
 # Changelog
 
 
+## v2.0.6 - 2020-11-22
+- Fixed Telegram
+
 ## v2.0.5 - 2020-11-17
 - Bugfixes
 - Additional debug
