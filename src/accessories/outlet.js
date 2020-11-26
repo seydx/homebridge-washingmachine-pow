@@ -193,52 +193,51 @@ class OutletAccessory {
             .getService(this.api.hap.Service.Outlet)
             .getCharacteristic(this.api.hap.Characteristic.Amperes)
             .updateValue(message.ENERGY.Current);
-            
-          if(this.Telegram){
       
-            if(message.ENERGY.Power >= this.accessory.context.config.startValue && !this.accessory.context.started){
-          
-              this.accessory.context.started = true;
-              
+          if(message.ENERGY.Power >= this.accessory.context.config.startValue && !this.accessory.context.started){
+        
+            this.accessory.context.started = true;
+            
+            if(this.Telegram)
               this.Telegram.send('started', this.accessory.displayName);
+            
+            const motionAccessory = this.accessories.find(accessory => accessory.displayName === this.accessory.displayName + ' Motion');
+            
+            if(motionAccessory) {
+            
+              motionAccessory
+                .getService(this.api.hap.Service.MotionSensor)
+                .getCharacteristic(this.api.hap.Characteristic.MotionDetected)
+                .updateValue(1);
+            
+            } else {
+            
+              Logger.info('Started', this.accessory.displayName);
               
-              const motionAccessory = this.accessories.find(accessory => accessory.displayName === this.accessory.displayName + ' Motion');
-              
-              if(motionAccessory) {
-              
-                motionAccessory
-                  .getService(this.api.hap.Service.MotionSensor)
-                  .getCharacteristic(this.api.hap.Characteristic.MotionDetected)
-                  .updateValue(1);
-              
-              } else {
-              
-                Logger.info('Started', this.accessory.displayName);
-                
-              }
-              
-            } else if(message.ENERGY.Power < this.accessory.context.config.startValue && this.accessory.context.started){
-          
-              this.accessory.context.started = false;
-              
-              this.Telegram.send('finished', this.accessory.displayName);
-              
-              const motionAccessory = this.accessories.find(accessory => accessory.displayName === this.accessory.displayName + ' Motion');
-              
-              if(motionAccessory) {
-              
-                motionAccessory
-                  .getService(this.api.hap.Service.MotionSensor)
-                  .getCharacteristic(this.api.hap.Characteristic.MotionDetected)
-                  .updateValue(0);
-              
-              } else {
-              
-                Logger.info('Finished', this.accessory.displayName);
-              
-              }
-          
             }
+            
+          } else if(message.ENERGY.Power < this.accessory.context.config.startValue && this.accessory.context.started){
+        
+            this.accessory.context.started = false;
+            
+            if(this.Telegram)
+              this.Telegram.send('finished', this.accessory.displayName);
+            
+            const motionAccessory = this.accessories.find(accessory => accessory.displayName === this.accessory.displayName + ' Motion');
+            
+            if(motionAccessory) {
+            
+              motionAccessory
+                .getService(this.api.hap.Service.MotionSensor)
+                .getCharacteristic(this.api.hap.Characteristic.MotionDetected)
+                .updateValue(0);
+            
+            } else {
+            
+              Logger.info('Finished', this.accessory.displayName);
+            
+            }
+        
           }
       
           break;
