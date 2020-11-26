@@ -1,6 +1,9 @@
 # Changelog
 
 
+## v2.0.7 - 202-11-26
+- Fixed MotionSensor
+
 ## v2.0.6 - 2020-11-22
 - Fixed Telegram
 
