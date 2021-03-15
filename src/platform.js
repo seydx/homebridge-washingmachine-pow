@@ -12,7 +12,7 @@ const MotionAccessory = require('./accessories/motion.js');
 //Custom Types
 const EveTypes = require('./types/eve_types.js');
 
-const PLUGIN_NAME = 'homebridge-washmachine-pow';
+const PLUGIN_NAME = 'homebridge-washingmachine-pow';
 const PLATFORM_NAME = 'WMPow';
 
 var Accessory, UUIDGen, FakeGatoHistoryService;
