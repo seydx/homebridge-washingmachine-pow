@@ -1,17 +1,22 @@
 <p align="center">
-    <img src="https://i.imgur.com/mYrmIl9.png" height="200">
+    <img src="https://i.imgur.com/mYrmIl9.png" height="300">
 </p>
 
 
-# Washingmachine!Pow v2
+# homebridge-washingmachine-pow
 
-[![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
 [![npm](https://img.shields.io/npm/v/homebridge-washingmachine-pow.svg?style=flat-square)](https://www.npmjs.com/package/homebridge-washingmachine-pow)
 [![npm](https://img.shields.io/npm/dt/homebridge-washingmachine-pow.svg?style=flat-square)](https://www.npmjs.com/package/homebridge-washingmachine-pow)
 [![GitHub last commit](https://img.shields.io/github/last-commit/SeydX/homebridge-washingmachine-pow.svg?style=flat-square)](https://github.com/SeydX/homebridge-washingmachine-pow)
+[![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
+[![Discord](https://img.shields.io/discord/432663330281226270?color=728ED5&logo=discord&label=discord)](https://discord.gg/kqNCe2D)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square&maxAge=2592000)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=NP4T3KASWQLD8)
 
 **Creating and maintaining Homebridge plugins consume a lot of time and effort, if you would like to share your appreciation, feel free to "Star" or donate.**
+
+[Click here](https://github.com/SeydX) to review more of my plugins.
+
+## Info
 
 <img src="https://i.imgur.com/THZg6kb.gif" align="right" alt="HomeKit Overview" width="270px" height="541px">
 
@@ -25,7 +30,7 @@ You can also set up the notifier to get a Telegram notification with customized 
 
 After [Homebridge](https://github.com/nfarina/homebridge) has been installed:
 
--  ```(sudo) npm i -g homebridge-washingmachine-pow@latest```
+-  ```sudo npm i -g homebridge-washingmachine-pow@latest```
 
 
 ## Basic configuration
