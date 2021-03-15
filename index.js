@@ -1,7 +1,7 @@
 /**
  * v2.0
  *
- * @url https://github.com/SeydX/homebridge-washmachine-pow
+ * @url https://github.com/SeydX/homebridge-washingmachine-pow
  * @author SeydX <seyd55@outlook.de>
  *
 **/
@@ -10,5 +10,5 @@
 
 module.exports = function (homebridge) {
   let WMPow = require('./src/platform.js')(homebridge);
-  homebridge.registerPlatform('homebridge-washmachine-pow', 'WMPow', WMPow, true);
+  homebridge.registerPlatform('homebridge-washingmachine-pow', 'WMPow', WMPow, true);
 };
