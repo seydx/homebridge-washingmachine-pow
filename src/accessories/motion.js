@@ -2,6 +2,8 @@
 
 const Logger = require('../helper/logger.js');
 
+const timeout = (ms) => new Promise((res) => setTimeout(res, ms));
+
 class MotionAccessory {
 
   constructor (api, accessory, FakeGatoHistoryService) {
@@ -32,8 +34,12 @@ class MotionAccessory {
     
     this.historyService = new this.FakeGatoHistoryService('motion', this.accessory, {storage:'fs'}); 
     
+    await timeout(250);
+    
     service.getCharacteristic(this.api.hap.Characteristic.MotionDetected)
       .on('change', this.changedState.bind(this));
+      
+    this.refreshHistory(service)
     
   }
   
@@ -54,6 +60,21 @@ class MotionAccessory {
     
     }
   
+  }
+  
+  refreshHistory(service){ 
+    
+    let state = service.getCharacteristic(this.api.hap.Characteristic.ContactSensorState).value;
+    
+    this.historyService.addEntry({
+      time: Math.round(new Date().valueOf() / 1000), 
+      status: state ? 1 : 0
+    });
+    
+    setTimeout(() => {
+      this.refreshHistory(service);
+    }, 10 * 60 * 1000);
+    
   }
 
 }

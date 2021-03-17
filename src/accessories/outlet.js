@@ -2,6 +2,8 @@
 
 const Logger = require('../helper/logger.js');
 
+const timeout = (ms) => new Promise((res) => setTimeout(res, ms));
+
 const MQTT = require('async-mqtt');
 
 class OutletAccessory {
@@ -22,7 +24,7 @@ class OutletAccessory {
   // Services
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-  getService () {
+  async getService () {
     
     let service = this.accessory.getService(this.api.hap.Service.Outlet);
         
@@ -48,6 +50,8 @@ class OutletAccessory {
   
     this.historyService = new this.FakeGatoHistoryService('energy', this.accessory, {storage:'fs'}); 
     
+    await timeout(250);
+    
     service.getCharacteristic(this.api.hap.Characteristic.CurrentConsumption)
       .on('change', this.changedState.bind(this));
     
@@ -58,6 +62,7 @@ class OutletAccessory {
       .on('set', this.setState.bind(this));
       
     this.start();
+    this.refreshHistory(service)
     
   }  
   
@@ -337,7 +342,22 @@ class OutletAccessory {
     
     }
   
-  }               
+  } 
+  
+  refreshHistory(service){ 
+    
+    let power = service.getCharacteristic(this.api.hap.Characteristic.CurrentConsumption).value;
+    
+    this.historyService.addEntry({
+      time: Math.round(new Date().valueOf() / 1000), 
+      power: power
+    });
+    
+    setTimeout(() => {
+      this.refreshHistory(service);
+    }, 10 * 60 * 1000);
+    
+  }         
 
 }
 
