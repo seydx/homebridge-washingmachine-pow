@@ -118,6 +118,16 @@ After [Homebridge](https://github.com/nfarina/homebridge) has been installed:
 | telegram.messages.finished | **No** | Own message when motion sensor triggers off (if you dont want to get this notification, just remove from config) |
 
 
+
+## Power Report
+
+The plugin works with the latest version of Tasmota (at the time of writing v9.3.1). If you want to have a more precise output of the power consumption, you can write the following command via the Tasmote page of the device under "Console" and confirm it with "Enter".
+
+**PowerDelta 1**
+
+**1** stands for the percentage change in power consumption. This means that a change of 1% will send a message via MQTT, which the plugin will then process and show to you via EVE.
+
+
 ## Supported clients
 
 This plugin has been verified to work with the following apps on iOS 12.2 and iOS 12.3 Beta:
