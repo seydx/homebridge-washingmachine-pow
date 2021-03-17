@@ -1,7 +1,12 @@
 # Changelog
 
 
-## v2.0.7 - 202-11-26
+## v2.1.0 - 2021-03-17
+- Added comma separated chatIDs ([#7](https://github.com/SeydX/homebridge-washingmachine-pow/pull/7))
+- Fixed a bug with fakegato showing characteristic warnings
+- Bump deps
+
+## v2.0.7 - 2020-11-26
 - Fixed MotionSensor
 
 ## v2.0.6 - 2020-11-22
