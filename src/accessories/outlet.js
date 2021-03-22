@@ -154,9 +154,10 @@ class OutletAccessory {
           Logger.debug(message.toString() + ' (stateGet)', this.accessory.displayName);
       
           try {
-            message = JSON.parse(message);
+            message = JSON.parse(message);   
           } catch(err) {
             Logger.warn('Received bad response from device (stateGet)');
+            Logger.warn(message);
             return;
           }
           
@@ -179,10 +180,10 @@ class OutletAccessory {
             message = JSON.parse(message);
           } catch(err) {
             Logger.warn('Received bad response from device (energyGet)');
+            Logger.warn(message);
             return;
           }
-        
-          message = JSON.parse(message);
+
           state = message.ENERGY.Power 
             ? true 
             : false;
