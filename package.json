@@ -1,6 +1,6 @@
 {
   "name": "homebridge-washingmachine-pow",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Homebridge plugin for Sonoff POW, customized for washingmachines",
   "main": "index.js",
   "devDependencies": {},
