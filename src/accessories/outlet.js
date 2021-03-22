@@ -62,7 +62,7 @@ class OutletAccessory {
       .on('set', this.setState.bind(this));
       
     this.start();
-    this.refreshHistory(service)
+    this.refreshHistory(service);
     
   }  
   
@@ -153,7 +153,13 @@ class OutletAccessory {
         
           Logger.debug(message.toString() + ' (stateGet)', this.accessory.displayName);
       
-          message = JSON.parse(message);
+          try {
+            message = JSON.parse(message);
+          } catch(err) {
+            Logger.warn('Received bad response from device (stateGet)');
+            return;
+          }
+          
           state = message.POWER === this.accessory.context.config.onValue 
             ? true 
             : false;
@@ -168,6 +174,13 @@ class OutletAccessory {
         case this.accessory.context.config.topics.energyGet:
       
           Logger.debug(message.toString() + ' (energyGet)', this.accessory.displayName);
+        
+          try {
+            message = JSON.parse(message);
+          } catch(err) {
+            Logger.warn('Received bad response from device (energyGet)');
+            return;
+          }
         
           message = JSON.parse(message);
           state = message.ENERGY.Power 
