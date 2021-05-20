@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://i.imgur.com/mYrmIl9.png" height="200">
+    <img src="https://github.com/SeydX/homebridge-washingmachine-pow/blob/master/images/logo.png" height="200">
 </p>
 
 
