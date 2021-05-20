@@ -1,5 +1,7 @@
 # Changelog
 
+## v2.1.3 - 2021-05-20
+- Minor improvements & bugfixes
 
 ## v2.1.2 - 2021-03-22
 - Bugfix
